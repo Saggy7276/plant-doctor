@@ -1,22 +1,8 @@
-"""
-agent/graph.py — LangGraph plant-doctor agent.
-
-Normal flow — high confidence, unambiguous visual category:
-    START → identify_species → diagnose → prescribe_care_plan → END
-
-Normal flow — low confidence OR ambiguous category (water/light/uncertain):
-    START → identify_species → diagnose → ask_clarifying_questions
-          -(interrupt)→ prescribe_care_plan → END
-
-Follow-up (checkin) flow:
-    START → followup_node → END
-    (triggered when phase == "checkin")
-
-Routing rule after diagnose:
-    issue_category in {overwatering, underwatering, light, uncertain}
-        OR confidence < 0.7  →  ask_clarifying_questions
-    otherwise               →  prescribe_care_plan directly
-"""
+# LangGraph agent for plant diagnosis.
+# Main flow: identify species -> diagnose -> write care plan.
+# If the diagnosis is low confidence or ambiguous (overwatering/light/uncertain),
+# the graph pauses and asks the user a few questions before writing the plan.
+# Check-in flow (phase == "checkin") goes straight to followup_node to compare photos.
 
 import base64
 import json
@@ -50,7 +36,7 @@ _ALWAYS_CLARIFY      = {"overwatering", "underwatering", "light", "uncertain"}
 _CONFIDENCE_THRESHOLD = 0.7
 
 
-# ── state ─────────────────────────────────────────────────────────────────────
+# state definition
 
 class PlantAgentState(TypedDict):
     plant_id:             str
@@ -69,7 +55,7 @@ class PlantAgentState(TypedDict):
     changes:              list[str]
 
 
-# ── shared helpers ────────────────────────────────────────────────────────────
+# shared helpers
 
 def _openai_client() -> OpenAI:
     return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -107,7 +93,7 @@ def _parse_json(raw: str) -> dict:
         raise ValueError(f"No JSON in model output: {raw!r}")
 
 
-# ── nodes: normal flow ────────────────────────────────────────────────────────
+# graph nodes
 
 def identify_species_node(state: PlantAgentState) -> dict:
     if state.get("species", "").strip():
@@ -254,7 +240,7 @@ def prescribe_care_plan_node(state: PlantAgentState) -> dict:
     return {"care_plan": care_plan, "phase": "done"}
 
 
-# ── node: follow-up / checkin ─────────────────────────────────────────────────
+# checkin node
 
 def followup_node(state: PlantAgentState) -> dict:
     """
@@ -333,7 +319,7 @@ def followup_node(state: PlantAgentState) -> dict:
     }
 
 
-# ── routers ───────────────────────────────────────────────────────────────────
+# routing functions
 
 def _start_router(state: PlantAgentState) -> str:
     return "followup" if state.get("phase") == "checkin" else "identify_species"
@@ -352,7 +338,7 @@ def _after_diagnose_router(state: PlantAgentState) -> str:
     return "prescribe_care_plan"
 
 
-# ── graph ─────────────────────────────────────────────────────────────────────
+# build and compile the graph
 
 def build_graph():
     builder = StateGraph(PlantAgentState)

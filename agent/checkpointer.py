@@ -1,7 +1,5 @@
-"""
-Shared SqliteSaver — one connection for the whole process lifetime.
-Import `checkpointer` everywhere; never create per-request instances.
-"""
+# Single SQLite checkpointer shared across the app.
+# LangGraph needs this to save and resume graph state between requests.
 
 import sqlite3
 from pathlib import Path

@@ -1,17 +1,7 @@
-"""
-vision_service.py — OpenAI vision wrapper.
-
-Public API:
-    species_result = identify(image_path)
-    # -> IdentifyResult TypedDict  (species name + confidence only)
-
-    diag_result = diagnose(image_path, known_species=None)
-    # -> DiagnosisResult TypedDict  (issue category, symptoms, evidence, confidence)
-
-Call identify() first, then pass the confirmed species into diagnose() as known_species.
-Keeping the two calls separate prevents the model from anchoring its diagnosis on its own
-species guess (once it decides "Pothos", it tends to confabulate Pothos-typical problems).
-"""
+# OpenAI gpt-4o wrapper for plant image analysis.
+# identify() detects the species, diagnose() finds what's wrong.
+# Keep them as separate calls — combining them causes the model to bias
+# its diagnosis based on its own species guess.
 
 import base64
 import io
@@ -64,7 +54,7 @@ class DiagnosisResult(TypedDict):
     confidence:     float
 
 
-# ── identify prompt ───────────────────────────────────────────────────────────
+# species identification prompt
 
 _ID_SYSTEM = (
     "You are a botanist. Look at this plant photograph and identify the species. "
@@ -78,7 +68,7 @@ _ID_SCHEMA = json.dumps(
 )
 
 
-# ── diagnose prompt ───────────────────────────────────────────────────────────
+# diagnosis prompt and category rules
 
 _CATEGORY_HINTS = """\
 Category definitions (use exactly one):
@@ -141,7 +131,7 @@ def _build_prompt(known_species: str | None) -> str:
     )
 
 
-# ── response parsing ──────────────────────────────────────────────────────────
+# parse and validate the model response
 
 def _extract_json(raw: str) -> dict:
     """Parse JSON; strip accidental fences as a fallback."""
@@ -200,17 +190,10 @@ def _validate(data: dict) -> DiagnosisResult:
     )
 
 
-# ── image encoding ────────────────────────────────────────────────────────────
+# image preprocessing and base64 encoding
 
 def _preprocess(img: Image.Image) -> Image.Image:
-    """
-    Prepare a plant photo for vision-model diagnosis.
-
-    1. Loose center crop (85% of each dimension) — removes background edges,
-       pots, and floor clutter while preserving whole-plant context.
-    2. Gentle unsharp mask — sharpens leaf edges and lesion borders without
-       creating fake artifacts (radius=1, percent=60, threshold=3).
-    """
+    # Crop out the border edges (pots, floor) and sharpen leaf detail before sending to the model.
     w, h = img.size
     margin_x = int(w * 0.075)
     margin_y = int(h * 0.075)
@@ -227,21 +210,11 @@ def _encode(path: str) -> tuple[str, str]:
     return base64.b64encode(buf.getvalue()).decode(), "image/jpeg"
 
 
-# ── public API ────────────────────────────────────────────────────────────────
+# public functions
 
 def identify(image_path: str) -> IdentifyResult:
-    """
-    Species-identification-only call — no diagnosis fields.
-
-    Run this first, then pass the result's species into diagnose() as known_species.
-    Keeping the two calls independent prevents the model from anchoring its issue
-    assessment on its own species guess.
-
-    Raises:
-        RuntimeError: OPENAI_API_KEY missing.
-        FileNotFoundError: image_path does not exist.
-        ValueError: model response could not be parsed as valid JSON.
-    """
+    # Returns species name and confidence. Run this before diagnose() so the
+    # diagnosis prompt already knows the species instead of guessing it.
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY not set in environment / .env")
@@ -285,18 +258,8 @@ def identify(image_path: str) -> IdentifyResult:
 
 
 def diagnose(image_path: str, known_species: str | None = None) -> DiagnosisResult:
-    """
-    Diagnose a plant photo via OpenAI vision (gpt-4o).
-
-    Returns DiagnosisResult with species, issue_category, symptoms, evidence, confidence.
-    issue_category is always one of the VALID_CATEGORIES enum; "uncertain" is used
-    when the image does not support a confident diagnosis.
-
-    Raises:
-        RuntimeError: OPENAI_API_KEY missing.
-        FileNotFoundError: image_path does not exist.
-        ValueError: model response could not be parsed as valid JSON.
-    """
+    # Sends the image to gpt-4o and returns issue category, symptoms, and confidence.
+    # Pass known_species if you already ran identify() — otherwise the model guesses it.
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY not set in environment / .env")

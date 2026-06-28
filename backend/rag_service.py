@@ -1,12 +1,6 @@
-"""
-rag_service.py — ChromaDB-backed plant-care knowledge base.
-
-Public API:
-    ingest(text, source, topic)  -> int   (number of chunks stored)
-    retrieve(query, n_results)   -> list[dict]  (chunks with citations)
-    list_sources()               -> list[dict]
-    delete_source(source)        -> int   (chunks deleted)
-"""
+# ChromaDB knowledge base for plant care content.
+# Text gets split into chunks, embedded with OpenAI, and stored.
+# retrieve() pulls the most relevant chunks to include in care plan prompts.
 
 import os
 import re

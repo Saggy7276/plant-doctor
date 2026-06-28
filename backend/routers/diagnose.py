@@ -22,7 +22,7 @@ router = APIRouter()
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
+# helpers
 
 def _save_upload(file: UploadFile, user_id: int, plant_id: int) -> str:
     ext  = Path(file.filename or "upload").suffix.lower() or ".jpg"
@@ -48,7 +48,7 @@ def _guard_plant(plant_id: int, user_id: int, db: Session) -> models.Plant:
     return plant
 
 
-# ── endpoints ─────────────────────────────────────────────────────────────────
+# endpoints
 
 @router.post("/{plant_id}", response_model=schemas.DiagnoseStartOut)
 def start_diagnosis(
@@ -59,11 +59,8 @@ def start_diagnosis(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    Upload a plant photo and start the diagnosis agent.
-    Runs identify → diagnose → ask_clarifying_questions, then pauses.
-    Returns the thread_id (needed for /resume) and the generated questions.
-    """
+    # Upload a photo and kick off the diagnosis agent.
+    # If the result is ambiguous, the graph pauses and returns questions for the user.
     _guard_plant(plant_id, current_user.id, db)
     image_path = _save_upload(file, current_user.id, plant_id)
     thread_id  = _thread_id(current_user.id, plant_id)
@@ -151,11 +148,7 @@ def resume_diagnosis(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    Resume the paused agent with the user's answers.
-    Runs prescribe_care_plan, then saves Diagnosis + CarePlan to the DB.
-    Returns the care plan and the saved record IDs.
-    """
+    # Resume the paused graph with the user's answers and get back the care plan.
     _guard_plant(plant_id, current_user.id, db)
     config = {"configurable": {"thread_id": body.thread_id}}
 
@@ -171,7 +164,7 @@ def resume_diagnosis(
     if not care_plan_text:
         raise HTTPException(status_code=500, detail="Agent returned an empty care plan.")
 
-    # ── persist Diagnosis ─────────────────────────────────────────────────────
+    # save diagnosis to DB
     diagnosis_row = models.Diagnosis(
         image_path=image_path,
         result=diagnosis_dict.get("issue_category"),
@@ -183,7 +176,7 @@ def resume_diagnosis(
     db.add(diagnosis_row)
     db.flush()  # get diagnosis_row.id before creating CarePlan
 
-    # ── persist CarePlan ──────────────────────────────────────────────────────
+    # save care plan to DB
     issue     = diagnosis_dict.get("issue_category", "issue")
     species   = final.get("species", "plant")
     care_row  = models.CarePlan(
@@ -214,16 +207,10 @@ def checkin(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """
-    7-day follow-up: upload a new photo, compare with the original, get an updated care plan.
-
-    Requires:
-    - file  — the NEW photo (real image of the plant, taken now)
-    - thread_id — the thread_id you received from the original diagnosis call
-    """
+    # Compare a new photo against the original diagnosis and update the care plan.
     _guard_plant(plant_id, current_user.id, db)
 
-    # ── load original state from checkpoint ───────────────────────────────────
+    # load original diagnosis state from the LangGraph checkpoint
     orig_config   = {"configurable": {"thread_id": thread_id}}
     orig_snapshot = plant_graph.get_state(orig_config)
     if not orig_snapshot or not orig_snapshot.values:
@@ -245,10 +232,10 @@ def checkin(
             detail="Original diagnosis has no care plan yet. Complete the /resume step first.",
         )
 
-    # ── save the new photo ────────────────────────────────────────────────────
+    # save the new photo to disk
     new_image_path = _save_upload(file, current_user.id, plant_id)
 
-    # ── run followup on a derived thread (keeps the original intact) ──────────
+    # run the checkin on a derived thread so the original checkpoint stays intact
     checkin_thread = f"{thread_id}-ck"
     checkin_config = {"configurable": {"thread_id": checkin_thread}}
 
@@ -275,7 +262,7 @@ def checkin(
 
     orig_image_path = orig.get("image_path", "")
 
-    # ── persist: new Diagnosis row for the checkin photo ─────────────────────
+    # save checkin diagnosis to DB
     diagnosis_row = models.Diagnosis(
         image_path=new_image_path,
         result=orig.get("diagnosis", {}).get("issue_category"),
@@ -287,7 +274,7 @@ def checkin(
     db.add(diagnosis_row)
     db.flush()
 
-    # ── persist: updated CarePlan ─────────────────────────────────────────────
+    # save updated care plan to DB
     species  = orig.get("species", "plant")
     care_row = models.CarePlan(
         title=f"7-day update: {species} — {progress}",
