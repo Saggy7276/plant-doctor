@@ -1,0 +1,81 @@
+class,image,gt_species,gt_category,identified_species,id_confidence,predicted_category,diag_confidence,match
+Aloe_Anthracnose,processed_img_Anthracnose00161.jpg,Aloe vera,disease,Aloe vera,,disease,0.85,True
+Aloe_Anthracnose,processed_img_Anthracnose00104.jpg,Aloe vera,disease,Aloe vera,,disease,0.95,True
+Aloe_Anthracnose,processed_img_Anthracnose00397.JPG,Aloe vera,disease,Aloe vera,,disease,0.9,True
+Aloe_Anthracnose,processed_img_Anthracnose00382.JPG,Aloe vera,disease,Aloe vera,,disease,0.9,True
+Aloe_Anthracnose,processed_img_Anthracnose00362.JPG,Aloe vera,disease,Aloe vera,,overwatering,0.9,False
+Aloe_Healthy,processed_img_Healthy1144.jpg,Aloe vera,healthy,Aloe vera,,nutrient,0.85,False
+Aloe_Healthy,processed_img_Healthy11164.jpg,Aloe vera,healthy,Aloe vera,,healthy,0.95,True
+Aloe_Healthy,processed_img_Healthy1166.jpg,Aloe vera,healthy,Aloe vera,,disease,0.85,False
+Aloe_Healthy,processed_img_Healthy11610.jpg,Aloe vera,healthy,Aloe vera,,disease,0.85,False
+Aloe_Healthy,processed_img_Healthy1155.jpg,Aloe vera,healthy,Aloe vera,,disease,0.85,False
+Aloe_LeafSpot,processed_img_Leaf Spot008.jpeg,Aloe vera,disease,Aloe vera,,disease,0.9,True
+Aloe_LeafSpot,processed_img_Leaf Spot00148.jpg,Aloe vera,disease,Aloe vera,,disease,0.95,True
+Aloe_LeafSpot,processed_img_Leaf Spot00123.jpg,Aloe vera,disease,Aloe vera,,disease,0.9,True
+Aloe_LeafSpot,processed_img_Leaf Spot00274.jpg,Aloe vera,disease,Aloe vera,,disease,0.85,True
+Aloe_LeafSpot,processed_img_Leaf Spot00209.jpg,Aloe vera,disease,Aloe vera,,disease,0.9,True
+Aloe_Rust,processed_img_Aloe Rust0024.jpeg,Aloe vera,disease,Aloe vera,,disease,0.85,True
+Aloe_Rust,processed_img_Aloe Rust00108.jpg,Aloe vera,disease,Aloe vera,,light,0.85,False
+Aloe_Rust,processed_img_Aloe Rust00104.jpg,Aloe vera,disease,Aloe vera,,disease,0.9,True
+Aloe_Rust,processed_img_Aloe Rust0081.JPG,Aloe vera,disease,Aloe vera,,disease,0.9,True
+Aloe_Rust,processed_img_Aloe Rust00180.JPG,Aloe vera,disease,Aloe vera,,nutrient,0.9,False
+Aloe_Sunburn,processed_img_Sunburn00239.jpg,Aloe vera,light,Aloe vera,,disease,0.9,False
+Aloe_Sunburn,processed_img_Sunburn00168.jpg,Aloe vera,light,Aloe vera,,nutrient,0.85,False
+Aloe_Sunburn,processed_img_Sunburn00475.jpg,Aloe vera,light,Aloe vera,,disease,0.85,False
+Aloe_Sunburn,processed_img_Sunburn00445.jpg,Aloe vera,light,Aloe vera,,disease,0.9,False
+Aloe_Sunburn,processed_img_Sunburn00438.jpg,Aloe vera,light,Aloe vera,,disease,0.85,False
+Cactus_Dactylopius_Opuntia,Dactylopius_opuntia (186).png,Cactus,pest,Cactus,,healthy,0.95,False
+Cactus_Dactylopius_Opuntia,Dactylopius_opuntia (113).png,Cactus,pest,Cactus,,pest,0.85,True
+Cactus_Dactylopius_Opuntia,Dactylopius_opuntia (290).png,Cactus,pest,Cactus,,disease,0.9,False
+Cactus_Dactylopius_Opuntia,Dactylopius_opuntia (272).png,Cactus,pest,Cactus,,pest,0.9,True
+Cactus_Dactylopius_Opuntia,Dactylopius_opuntia (259).png,Cactus,pest,Cactus,,disease,0.9,False
+Cactus_Healthy,Healthy (278).png,Cactus,healthy,Cactus,,healthy,0.95,True
+Cactus_Healthy,Healthy (168).png,Cactus,healthy,Cactus,,healthy,0.95,True
+Cactus_Healthy,Healthy (105).png,Cactus,healthy,Cactus,,healthy,0.95,True
+Cactus_Healthy,Healthy (63).png,Cactus,healthy,Cactus,,healthy,0.95,True
+Cactus_Healthy,Healthy (180).png,Cactus,healthy,Cactus,,overwatering,0.85,False
+Money_Plant_Bacterial_wilt_disease,Money_Plant_Bacterial_wilt_disease_005_jpg.rf.3d3980f2f44c9105896f8ee27b13a5aa.jpg,Money Plant,overwatering,Money Plant,,light,0.85,False
+Money_Plant_Bacterial_wilt_disease,Money_Plant_Bacterial_wilt_disease_004_jpg.rf.6028f99b721eaab54019366c51a843b7.jpg,Money Plant,overwatering,Money Plant,,overwatering,0.85,True
+Money_Plant_Bacterial_wilt_disease,Money_Plant_Bacterial_wilt_disease_027_jpg.rf.ce4ab112c6ebae3b64fbd38cdc0e7501.jpg,Money Plant,overwatering,Money Plant,,disease,0.9,False
+Money_Plant_Bacterial_wilt_disease,Money_Plant_Bacterial_wilt_disease_078_jpg.rf.20259be51a552b715d717d8e7383a957.jpg,Money Plant,overwatering,Money Plant,,overwatering,0.85,True
+Money_Plant_Bacterial_wilt_disease,Money_Plant_Bacterial_wilt_disease_064_jpg.rf.0e74bc87ff70792b2bfad20b69663ffd.jpg,Money Plant,overwatering,Money Plant,,disease,0.85,False
+Money_Plant_Healthy,Money_Plant_Healthy_012_jpg.rf.d2b9d2ccdb159347f849ea21c9d9295a.jpg,Money Plant,healthy,Money Plant,,light,0.85,False
+Money_Plant_Healthy,Money_Plant_Healthy_007_jpg.rf.de558a865436b5a7397263d8e0e6b557.jpg,Money Plant,healthy,Money Plant,,light,0.85,False
+Money_Plant_Healthy,Money_Plant_Healthy_028_jpg.rf.4695e32f9928989abb5d47fe88aa686f.jpg,Money Plant,healthy,Money Plant,,healthy,1.0,True
+Money_Plant_Healthy,Money_Plant_Healthy_022_jpg.rf.817808a5f53253a6e92947df715a02e9.jpg,Money Plant,healthy,Money Plant,,healthy,0.95,True
+Money_Plant_Healthy,Money_Plant_Healthy_072_jpg.rf.7740795cfdf01573215a8aea7abcddb1.jpg,Money Plant,healthy,Money Plant,,healthy,1.0,True
+Money_Plant_Manganese_Toxicity,Money_Plant_Manganese_Toxicity_065_jpg.rf.ba24b41c7a5280c52361004fd10e334d.jpg,Money Plant,nutrient,Money Plant,,overwatering,0.85,False
+Money_Plant_Manganese_Toxicity,Money_Plant_Manganese_Toxicity_008_jpg.rf.5d473833f41a417e7de940a82ab3113b.jpg,Money Plant,nutrient,Money Plant,,light,0.85,False
+Money_Plant_Manganese_Toxicity,Money_Plant_Manganese_Toxicity_002_jpg.rf.f37620f4182eadf0397f5768dcd9d4ad.jpg,Money Plant,nutrient,Money Plant,,light,0.85,False
+Money_Plant_Manganese_Toxicity,Money_Plant_Manganese_Toxicity_029_jpg.rf.5adf582b92d05eac1b1f9108c5c368c1.jpg,Money Plant,nutrient,Money Plant,,light,0.85,False
+Money_Plant_Manganese_Toxicity,Money_Plant_Manganese_Toxicity_025_jpg.rf.f147506727abf5532b84cce55d860479.jpg,Money Plant,nutrient,Money Plant,,overwatering,0.85,False
+Snake_Plant_Anthracnose,Snake_Plant_Anthracnose_007_jpg.rf.8facf4a96325bb6d24c09149f18b08a4.jpg,Snake Plant,disease,Snake Plant,,disease,0.9,True
+Snake_Plant_Anthracnose,Snake_Plant_Anthracnose_004_jpg.rf.b686b07fda70acf1fcbce39fe17e5ad9.jpg,Snake Plant,disease,Snake Plant,,disease,0.9,True
+Snake_Plant_Anthracnose,Snake_Plant_Anthracnose_068_jpg.rf.da32bb6e6cc58c7268ac8d25caa78a60.jpg,Snake Plant,disease,Snake Plant,,disease,0.9,True
+Snake_Plant_Anthracnose,Snake_Plant_Anthracnose_018_jpg.rf.4872bf31db5d64e278326af3070015fb.jpg,Snake Plant,disease,Snake Plant,,disease,0.9,True
+Snake_Plant_Anthracnose,Snake_Plant_Anthracnose_079_jpg.rf.7d21832a521be11977ce0b2374e09f79.jpg,Snake Plant,disease,Snake Plant,,disease,0.85,True
+Snake_Plant_Healthy,Snake_Plant_Healthy_019_jpg.rf.a9baff46946d9764d0f58309b92a5b48.jpg,Snake Plant,healthy,Snake Plant,,healthy,0.95,True
+Snake_Plant_Healthy,Snake_Plant_Healthy_004_jpg.rf.f11bcda4d64ff3246878dd34bb09849e.jpg,Snake Plant,healthy,Snake Plant,,disease,0.9,False
+Snake_Plant_Healthy,Snake_Plant_Healthy_056_jpg.rf.2c8ed3732f7db76ba4ec2adf544e6124.jpg,Snake Plant,healthy,Snake Plant,,disease,0.85,False
+Snake_Plant_Healthy,Snake_Plant_Healthy_021_jpg.rf.58172198379b2fad518262f0f2052146.jpg,Snake Plant,healthy,Snake Plant,,nutrient,0.9,False
+Snake_Plant_Healthy,Snake_Plant_Healthy_077_jpg.rf.28a1768bc970ac07e016c9bfee4c1cc0.jpg,Snake Plant,healthy,Snake Plant,,healthy,0.95,True
+Snake_Plant_Leaf_Withering,Snake_Plant_Leaf_Withering_017_jpg.rf.aacc95f1aeb22f0a5720c149fd688b26.jpg,Snake Plant,overwatering,Snake Plant,,disease,0.85,False
+Snake_Plant_Leaf_Withering,Snake_Plant_Leaf_Withering_001_jpg.rf.90661a80aa8d5f8633baac3aac63d668.jpg,Snake Plant,overwatering,Snake Plant,,disease,0.85,False
+Snake_Plant_Leaf_Withering,Snake_Plant_Leaf_Withering_032_jpg.rf.b51484a836b8ff3e1648ce97a7f96c37.jpg,Snake Plant,overwatering,Snake Plant,,disease,0.85,False
+Snake_Plant_Leaf_Withering,Snake_Plant_Leaf_Withering_029_jpg.rf.d210a112cafdf1fa77b62b471325ad36.jpg,Snake Plant,overwatering,Snake Plant,,nutrient,0.9,False
+Snake_Plant_Leaf_Withering,Snake_Plant_Leaf_Withering_074_jpg.rf.dd10aec0b420653dd67796819473da7a.jpg,Snake Plant,overwatering,Snake Plant,,disease,0.9,False
+Spider_Plant_Fungal_leaf_spot,Spider_Plant_Fungal_leaf_spot_059_jpg.rf.cd7a82e84ada856b9d81c45c09227a18.jpg,Spider Plant,disease,Spider Plant,,disease,0.9,True
+Spider_Plant_Fungal_leaf_spot,Spider_Plant_Fungal_leaf_spot_013_jpg.rf.47aac3dcc0dcf888da730f1ebe86c63c.jpg,Spider Plant,disease,Spider Plant,,disease,0.85,True
+Spider_Plant_Fungal_leaf_spot,Spider_Plant_Fungal_leaf_spot_001_jpg.rf.40d73ea12e02da889795be904288c4b5.jpg,Spider Plant,disease,Spider Plant,,disease,0.9,True
+Spider_Plant_Fungal_leaf_spot,Spider_Plant_Fungal_leaf_spot_062_jpg.rf.e89c5abb81a0926e653507b2f399c598.jpg,Spider Plant,disease,Spider Plant,,disease,0.9,True
+Spider_Plant_Fungal_leaf_spot,Spider_Plant_Fungal_leaf_spot_041_jpg.rf.2d52856281d3c6b87e1fa1d45a528efc.jpg,Spider Plant,disease,Spider Plant,,disease,0.85,True
+Spider_Plant_Healthy,Spider_Plant_Healthy_018_jpg.rf.23f0a3e8c66cbd442b0ba12db484c65f.jpg,Spider Plant,healthy,Spider Plant,,nutrient,0.9,False
+Spider_Plant_Healthy,Spider_Plant_Healthy_005_jpg.rf.04de69ca08efdc956db3cbdde87a68a3.jpg,Spider Plant,healthy,Spider Plant,,nutrient,0.85,False
+Spider_Plant_Healthy,Spider_Plant_Healthy_067_jpg.rf.2e4b77e915c9155749a6f4193945af6e.jpg,Spider Plant,healthy,Spider Plant,,healthy,0.95,True
+Spider_Plant_Healthy,Spider_Plant_Healthy_027_jpg.rf.97633c6b51bd05a62855f97eee9cc9c2.jpg,Spider Plant,healthy,Spider Plant,,light,0.85,False
+Spider_Plant_Healthy,Spider_Plant_Healthy_089_jpg.rf.f0ba6baec891c41a4d6cb209da80298f.jpg,Spider Plant,healthy,Spider Plant,,nutrient,0.85,False
+Spider_Plant_Leaf_Tip_Necrosis,Spider_Plant_Leaf_Tip_Necrosis_025_jpg.rf.d64145dfa53030e833c1c4327eb256b7.jpg,Spider Plant,nutrient,Spider Plant,,nutrient,0.9,True
+Spider_Plant_Leaf_Tip_Necrosis,Spider_Plant_Leaf_Tip_Necrosis_010_jpg.rf.feeff9a9297839773e75cefb9d801cc5.jpg,Spider Plant,nutrient,Spider Plant,,nutrient,0.9,True
+Spider_Plant_Leaf_Tip_Necrosis,Spider_Plant_Leaf_Tip_Necrosis_059_jpg.rf.036e6ced05c5633d63c5592cf7d469bf.jpg,Spider Plant,nutrient,Spider Plant,,light,0.85,False
+Spider_Plant_Leaf_Tip_Necrosis,Spider_Plant_Leaf_Tip_Necrosis_048_jpg.rf.ba06fde72213654217e0949b6f7a3ffb.jpg,Spider Plant,nutrient,Spider Plant,,nutrient,0.85,True
+Spider_Plant_Leaf_Tip_Necrosis,Spider_Plant_Leaf_Tip_Necrosis_135_jpg.rf.6d8dd00b5158179da296ce1d33384e38.jpg,Spider Plant,nutrient,Spider Plant,,nutrient,0.85,True

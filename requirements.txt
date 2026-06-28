@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+alembic
+pydantic[email]
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+python-multipart
+streamlit
+extra-streamlit-components
+requests
+Pillow
+chromadb
+python-dotenv
+openai
+langgraph

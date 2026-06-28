@@ -55,6 +55,7 @@ def start_diagnosis(
     plant_id: int,
     file: UploadFile = File(...),
     species: Optional[str] = Form(None),
+    user_context: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
@@ -77,7 +78,9 @@ def start_diagnosis(
         "user_answers":         "",
         "care_plan":            "",
         "phase":                "identify",
+        "user_context":         user_context or "",
         "followup_image_path":  "",
+        "days_elapsed":         0,
         "progress":             "",
         "changes":              [],
     }
@@ -87,20 +90,57 @@ def start_diagnosis(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Diagnosis failed: {exc}") from exc
 
-    interrupts = result.get("__interrupt__", [])
-    if not interrupts:
-        raise HTTPException(
-            status_code=500,
-            detail="Graph completed without pausing — interrupt() may be missing.",
+    interrupts     = result.get("__interrupt__", [])
+    diagnosis_dict = result.get("diagnosis", {})
+
+    if interrupts:
+        # Q&A path: graph paused — return questions for the frontend to display.
+        questions: list[str] = interrupts[0].value.get("questions", [])
+        return schemas.DiagnoseStartOut(
+            thread_id=thread_id,
+            questions=questions,
+            diagnosis=diagnosis_dict,
+            completed=False,
         )
 
-    questions: list[str] = interrupts[0].value.get("questions", [])
-    diagnosis: dict      = result.get("diagnosis", {})
+    # Direct path: high-confidence visual diagnosis, graph ran to completion.
+    care_plan_text = result.get("care_plan", "")
+    image_path     = result.get("image_path", "")
+    if not care_plan_text:
+        raise HTTPException(status_code=500, detail="Agent returned an empty care plan.")
+
+    issue   = diagnosis_dict.get("issue_category", "issue")
+    species = result.get("species", "plant")
+
+    diagnosis_row = models.Diagnosis(
+        image_path=image_path,
+        result=issue,
+        confidence=diagnosis_dict.get("confidence"),
+        plant_id=plant_id,
+        user_id=current_user.id,
+        thread_id=thread_id,
+    )
+    db.add(diagnosis_row)
+    db.flush()
+
+    care_row = models.CarePlan(
+        title=f"Care plan: {species} — {issue}",
+        content=care_plan_text,
+        plant_id=plant_id,
+        user_id=current_user.id,
+        diagnosis_id=diagnosis_row.id,
+    )
+    db.add(care_row)
+    db.commit()
+    db.refresh(care_row)
 
     return schemas.DiagnoseStartOut(
         thread_id=thread_id,
-        questions=questions,
-        diagnosis=diagnosis,
+        questions=[],
+        diagnosis=diagnosis_dict,
+        completed=True,
+        care_plan=care_plan_text,
+        care_plan_id=care_row.id,
     )
 
 
@@ -168,8 +208,9 @@ def resume_diagnosis(
 @router.post("/{plant_id}/checkin", response_model=schemas.CheckinOut)
 def checkin(
     plant_id: int,
-    file: UploadFile = File(..., description="New photo of the plant taken ~7 days after the original diagnosis"),
+    file: UploadFile = File(..., description="New photo of the plant taken after the original diagnosis"),
     thread_id: str = Form(..., description="thread_id returned by the original /diagnose/{plant_id} call"),
+    days_elapsed: int = Form(7, description="Calendar days between the original diagnosis photo and this photo"),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
@@ -214,6 +255,7 @@ def checkin(
     checkin_state: PlantAgentState = {
         **orig,                                  # carry over species, diagnosis, care_plan …
         "followup_image_path": new_image_path,
+        "days_elapsed":        days_elapsed,
         "progress":            "",
         "changes":             [],
         "phase":               "checkin",        # routes to followup_node

@@ -1,0 +1,48 @@
+class,image,predicted_species,confidence,match
+Alovera,109.jpg,Aloe vera,0.95,True
+Alovera,1.jpg,Aloe vera,0.95,True
+Alovera,100.jpg,Aloe vera,0.95,True
+Begonia (Begonia spp.),10.jpg,Begonia maculata,0.95,True
+Begonia (Begonia spp.),106.jpeg,Begonia maculata,0.9,True
+Begonia (Begonia spp.),122.jpg,Unknown,0.0,False
+Begonia (Begonia spp.),108.jpg,Unknown,0.0,False
+Begonia (Begonia spp.),137.jpg,Unknown,0.0,False
+Orchid,100.jpg,Unknown,0.0,False
+Orchid,120.jpg,Phalaenopsis,0.95,True
+Orchid,103.jpg,Cymbidium orchid,0.95,True
+Orchid,113.jpg,Unknown,0.0,False
+Prayer Plant (Maranta leuconeura),18.jpg,Maranta leuconeura,0.95,True
+Prayer Plant (Maranta leuconeura),10.jpg,Maranta leuconeura,0.95,True
+Prayer Plant (Maranta leuconeura),164.jpg,Calathea makoyana,0.9,False
+Prayer Plant (Maranta leuconeura),119.jpg,Maranta leuconeura,0.95,True
+Prayer Plant (Maranta leuconeura),105.jpg,Maranta leuconeura,0.95,True
+Rattlesnake Plant (Calathea lancifolia),1 (1).jpg,Calathea lancifolia,0.95,True
+Rattlesnake Plant (Calathea lancifolia),152.jpg,Calathea lancifolia,0.95,True
+Rattlesnake Plant (Calathea lancifolia),104.jpg,Calathea lancifolia,0.9,True
+Rattlesnake Plant (Calathea lancifolia),101.jpg,Calathea lancifolia,0.95,True
+Rattlesnake Plant (Calathea lancifolia),128.jpg,Calathea lancifolia,0.95,True
+Rubber Plant (Ficus elastica),1.jpg,Ficus elastica,0.9,True
+Rubber Plant (Ficus elastica),171.jpg,Ficus elastica,0.95,True
+Rubber Plant (Ficus elastica),125.jpg,Ficus elastica,0.95,True
+Rubber Plant (Ficus elastica),106.jpg,Ficus elastica 'Ruby',0.95,True
+Rubber Plant (Ficus elastica),140.jpg,Unknown,0.0,False
+Sago Palm (Cycas revoluta),158.jpg,Cycas revoluta,0.9,True
+Sago Palm (Cycas revoluta),100.jpg,Cycas revoluta,0.95,True
+Sago Palm (Cycas revoluta),141.jpg,Cycas revoluta,0.95,True
+Sago Palm (Cycas revoluta),119.jpg,Cycas revoluta,0.95,True
+Sago Palm (Cycas revoluta),117.jpg,Unknown,0.0,False
+Schefflera,102.jpg,Schefflera arboricola,0.95,True
+Schefflera,131.jpg,Schefflera arboricola,0.95,True
+Schefflera,11.jpg,Unknown,0.0,False
+Schefflera,109.jpg,Schefflera arboricola,0.9,True
+Schefflera,12.jpg,Schefflera arboricola,0.95,True
+Snake plant (Sanseviera),101.jpeg,Sansevieria trifasciata,0.95,True
+Snake plant (Sanseviera),117.jpg,Unknown,0.0,False
+Snake plant (Sanseviera),190.jpg,Sansevieria trifasciata,0.95,True
+Snake plant (Sanseviera),152.jpg,Sansevieria trifasciata,0.95,True
+Snake plant (Sanseviera),147.jpg,Sansevieria trifasciata,0.95,True
+Tulip,112.jpg,Tulipa,0.95,True
+Tulip,176.jpg,Unknown,0.0,False
+Tulip,124.jpg,Tulipa,0.95,True
+Tulip,113.jpg,Tulipa,0.95,True
+Tulip,133.jpg,Tulipa,0.95,True

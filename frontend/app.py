@@ -1,12 +1,18 @@
+import base64
+import json
 import os
 import re
+from pathlib import Path
 import requests
 import streamlit as st
+import extra_streamlit_components as stx
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).parent.parent / ".env", override=True)
 
 API = os.getenv("API_BASE", "http://localhost:8000")
+
+_cm = stx.CookieManager(key="pd_cm")
 
 st.set_page_config(
     page_title="Plant Doctor",
@@ -18,87 +24,112 @@ st.set_page_config(
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* global */
-[data-testid="stAppViewContainer"] { background:#f0fdf4; }
+/* ── global ── */
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="stMainBlockContainer"] {
+    background: #1c1a16 !important;
+}
 [data-testid="stMain"] { padding-top: 1.5rem; }
 
-/* ── dark sidebar ── */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg,#14532d 0%,#166534 100%) !important;
+/* native Streamlit text on dark bg */
+[data-testid="stMainBlockContainer"] p,
+[data-testid="stMainBlockContainer"] span,
+[data-testid="stMainBlockContainer"] label,
+[data-testid="stMainBlockContainer"] small,
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] span,
+[data-testid="stMarkdownContainer"] h1,
+[data-testid="stMarkdownContainer"] h2,
+[data-testid="stMarkdownContainer"] h3,
+[data-testid="stMarkdownContainer"] h4,
+[data-testid="stMarkdownContainer"] li { color: #f5f0e8 !important; }
+
+/* inputs / textareas / selectboxes */
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-baseweb="select"] > div,
+[data-baseweb="input"] > div {
+    background: #2a2520 !important;
+    border-color: #5a4a35 !important;
+    color: #f5f0e8 !important;
 }
-[data-testid="stSidebar"] hr { border-color:rgba(255,255,255,.15) !important; }
+
+/* ── sidebar ── */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg,#1a1507 0%,#231c0e 100%) !important;
+}
+[data-testid="stSidebar"] hr { border-color:rgba(255,255,255,.12) !important; }
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] small,
-[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] p { color:#dcfce7 !important; }
+[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] p { color:#f5f0e8 !important; }
 [data-testid="stSidebar"] .stButton > button {
-    border:1px solid rgba(255,255,255,.2) !important;
-    background:rgba(255,255,255,.1) !important;
-    color:#dcfce7 !important;
+    border:1px solid rgba(255,255,255,.18) !important;
+    background:rgba(255,255,255,.07) !important;
+    color:#f5f0e8 !important;
     border-radius:8px !important;
     text-align:left !important;
     font-size:.88rem !important;
 }
 [data-testid="stSidebar"] .stButton > button p,
 [data-testid="stSidebar"] .stButton > button span,
-[data-testid="stSidebar"] .stButton > button div {
-    color:#dcfce7 !important;
-}
+[data-testid="stSidebar"] .stButton > button div { color:#f5f0e8 !important; }
 [data-testid="stSidebar"] .stButton > button:hover {
-    background:rgba(255,255,255,.22) !important;
+    background:rgba(255,255,255,.18) !important;
 }
 [data-testid="stSidebar"] .stButton > button[kind="primary"] {
-    background:rgba(255,255,255,.25) !important;
+    background:rgba(134,239,172,.18) !important;
     border-color:#86efac !important;
     font-weight:700 !important;
 }
 
-/* ── ensure tab labels are always visible ── */
-button[data-baseweb="tab"] { color:#374151 !important; }
-button[data-baseweb="tab"][aria-selected="true"] { color:#14532d !important; font-weight:700 !important; }
+/* ── tabs ── */
+button[data-baseweb="tab"] { color:#a09070 !important; }
+button[data-baseweb="tab"][aria-selected="true"] { color:#86efac !important; font-weight:700 !important; }
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    background: #2a2520 !important;
+    border-radius: 10px 10px 0 0;
+}
 
-/* ── main content buttons ── */
+/* ── main buttons ── */
 [data-testid="stMainBlockContainer"] .stButton > button {
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    color: #1f2937 !important;
+    background: #2a2520 !important;
+    border: 1px solid #5a4a35 !important;
+    color: #f5f0e8 !important;
     border-radius: 8px !important;
 }
 [data-testid="stMainBlockContainer"] .stButton > button p,
 [data-testid="stMainBlockContainer"] .stButton > button span,
-[data-testid="stMainBlockContainer"] .stButton > button div {
-    color: #1f2937 !important;
-}
+[data-testid="stMainBlockContainer"] .stButton > button div { color: #f5f0e8 !important; }
 [data-testid="stMainBlockContainer"] .stButton > button[kind="primary"] {
-    background: #16a34a !important;
-    border-color: #16a34a !important;
+    background: #5a7a3a !important;
+    border-color: #5a7a3a !important;
 }
 [data-testid="stMainBlockContainer"] .stButton > button[kind="primary"] p,
 [data-testid="stMainBlockContainer"] .stButton > button[kind="primary"] span,
-[data-testid="stMainBlockContainer"] .stButton > button[kind="primary"] div {
-    color: #ffffff !important;
-}
+[data-testid="stMainBlockContainer"] .stButton > button[kind="primary"] div { color: #f5f0e8 !important; }
 [data-testid="stMainBlockContainer"] .stButton > button:hover {
-    border-color: #16a34a !important;
-    background: #f0fdf4 !important;
+    border-color: #86efac !important;
+    background: #332d24 !important;
 }
 
 /* ── plant card ── */
 .pcard {
     border-radius:14px;
-    background:#fff;
-    box-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+    background:#2a2520;
+    box-shadow:0 1px 6px rgba(0,0,0,.4),0 4px 18px rgba(0,0,0,.3);
     margin-bottom:.5rem;
-    border-left:5px solid #e5e7eb;
+    border-left:5px solid #5a4a35;
     transition:box-shadow .2s;
     overflow:hidden;
 }
-.pcard:hover { box-shadow:0 4px 24px rgba(0,0,0,.12); }
+.pcard:hover { box-shadow:0 4px 28px rgba(0,0,0,.5); }
 .pcard-body  { padding:.85rem 1rem .7rem; }
-.pcard-name    { font-size:1.05rem; font-weight:700; margin:0 0 2px; color:#14532d; }
-.pcard-species { font-size:.8rem; color:#6b7280; margin:0 0 8px; }
-.pcard-date    { font-size:.72rem; color:#9ca3af; margin-top:6px; }
+.pcard-name    { font-size:1.05rem; font-weight:700; margin:0 0 2px; color:#86efac; }
+.pcard-species { font-size:.8rem; color:#a09070; margin:0 0 8px; }
+.pcard-date    { font-size:.72rem; color:#7a6a58; margin-top:6px; }
 
 /* ── status badge ── */
 .badge {
@@ -114,78 +145,80 @@ button[data-baseweb="tab"][aria-selected="true"] { color:#14532d !important; fon
 
 /* ── stat card ── */
 .stat-box {
-    background:#fff; border:1px solid #e5e7eb;
+    background:#2a2520; border:1px solid #3d3328;
     border-radius:14px; padding:1rem 1.2rem;
     text-align:center;
-    box-shadow:0 1px 4px rgba(0,0,0,.06);
+    box-shadow:0 1px 6px rgba(0,0,0,.35);
 }
 .stat-num { font-size:2.2rem; font-weight:800; line-height:1.1; }
-.stat-lbl { font-size:.78rem; color:#6b7280; margin-top:3px; font-weight:500; }
+.stat-lbl { font-size:.78rem; color:#a09070; margin-top:3px; font-weight:500; }
 
 /* ── section header strip ── */
 .sec-hdr {
-    background:#dcfce7; border-left:4px solid #16a34a;
+    background:#332d1e; border-left:4px solid #86efac;
     padding:.35rem .8rem; border-radius:0 8px 8px 0;
-    font-weight:600; color:#14532d; margin:.9rem 0 .4rem;
+    font-weight:600; color:#f5f0e8; margin:.9rem 0 .4rem;
 }
 
 /* ── gallery caption ── */
-.gcap { font-size:.72rem; color:#6b7280; text-align:center; margin-top:2px; }
+.gcap { font-size:.72rem; color:#a09070; text-align:center; margin-top:2px; }
 
 /* ── step pill ── */
 .step-pill {
-    display:inline-block; background:#dcfce7; color:#14532d;
+    display:inline-block; background:#332d1e; color:#86efac;
     border-radius:999px; padding:3px 14px; font-size:.78rem;
     font-weight:700; margin-bottom:.5rem;
+    border:1px solid #5a4a35;
 }
 
 /* ── timeline row ── */
 .tl-row {
     display:flex; align-items:center; gap:.75rem;
-    padding:.5rem 0; border-bottom:1px solid #f3f4f6;
+    padding:.5rem 0; border-bottom:1px solid #3d3328;
 }
 .tl-dot  { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
-.tl-date { font-size:.75rem; color:#9ca3af; white-space:nowrap; min-width:75px; }
-.tl-text { font-size:.87rem; color:#1f2937; }
+.tl-date { font-size:.75rem; color:#7a6a58; white-space:nowrap; min-width:75px; }
+.tl-text { font-size:.87rem; color:#f5f0e8; }
 
 /* ── detail hero ── */
 .hero {
     border-radius:16px;
-    background:linear-gradient(135deg,#14532d,#15803d);
-    padding:1.6rem 2rem; color:#fff; margin-bottom:1.2rem;
-    box-shadow:0 4px 20px rgba(20,83,45,.3);
+    background:linear-gradient(135deg,#2a1f0a,#3d2e12);
+    padding:1.6rem 2rem; color:#f5f0e8; margin-bottom:1.2rem;
+    box-shadow:0 4px 20px rgba(0,0,0,.5);
+    border:1px solid #5a4a35;
 }
-.hero-name    { font-size:1.9rem; font-weight:800; margin:0 0 2px; }
-.hero-species { font-size:1rem; opacity:.75; margin:0 0 .9rem; }
+.hero-name    { font-size:1.9rem; font-weight:800; margin:0 0 2px; color:#f5f0e8; }
+.hero-species { font-size:1rem; opacity:.7; margin:0 0 .9rem; color:#f5f0e8; }
 
 /* ── checkin arrow ── */
 .ck-arrow {
     display:flex; align-items:center; justify-content:center;
-    font-size:2.4rem; padding:.5rem;
+    font-size:2.4rem; padding:.5rem; color:#86efac;
 }
 
 /* ── change tag ── */
 .ch-tag {
-    display:inline-block; background:#f1f5f9;
-    border:1px solid #e2e8f0; border-radius:8px;
-    padding:4px 12px; font-size:.83rem; color:#334155;
+    display:inline-block; background:#332d1e;
+    border:1px solid #5a4a35; border-radius:8px;
+    padding:4px 12px; font-size:.83rem; color:#f5f0e8;
     margin:3px 4px 3px 0;
 }
 
 /* ── upload zone placeholder ── */
 .upload-ph {
-    border:2px dashed #86efac; border-radius:14px;
+    border:2px dashed #5a4a35; border-radius:14px;
     padding:2rem 1rem; text-align:center;
-    background:#f0fdf4; color:#4b7c5a; font-size:2.5rem;
+    background:#2a2520; color:#86efac; font-size:2.5rem;
 }
 
 /* ── recent diag row ── */
 .rd-row {
     display:flex; align-items:center; gap:.6rem;
-    padding:.45rem 0; border-bottom:1px solid #f3f4f6;
+    padding:.45rem 0; border-bottom:1px solid #3d3328;
 }
-.rd-ts   { font-size:.75rem; color:#9ca3af; min-width:110px; font-family:monospace; }
-.rd-name { font-size:.88rem; font-weight:600; color:#1f2937; flex:1; }
+.rd-ts   { font-size:.75rem; color:#7a6a58; min-width:110px; font-family:monospace; }
+.rd-name { font-size:.88rem; font-weight:600; color:#f5f0e8; flex:1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -199,10 +232,11 @@ _ISSUE_TO_STATUS = {
     "underwatering": ("Recovering", "#f97316"),
     "nutrient":      ("Recovering", "#eab308"),
     "light":         ("Recovering", "#8b5cf6"),
+    "uncertain":     ("Uncertain",  "#6b7280"),
 }
 _PROG_COLORS = {"improving": "#22c55e", "stable": "#eab308", "worsening": "#ef4444"}
 _PROG_LABELS = {"improving": "Improving ↑", "stable": "Stable →", "worsening": "Worsening ↓"}
-_DOT_EMOJI   = {"Healthy": "🟢", "Recovering": "🟡", "Critical": "🔴", "Unknown": "⚪"}
+_DOT_EMOJI   = {"Healthy": "🟢", "Recovering": "🟡", "Critical": "🔴", "Uncertain": "❓", "Unknown": "⚪"}
 
 
 def _status(issue: str | None) -> tuple[str, str]:
@@ -302,6 +336,24 @@ _DEFAULTS: dict = {
 for k, v in _DEFAULTS.items():
     st.session_state.setdefault(k, v)
 
+def _jwt_username(token: str) -> str:
+    """Decode the username from the JWT payload without verifying the signature."""
+    try:
+        payload_b64 = token.split(".")[1]
+        payload_b64 += "=" * (-len(payload_b64) % 4)  # fix padding
+        payload = json.loads(base64.b64decode(payload_b64))
+        return payload.get("sub", "")
+    except Exception:
+        return ""
+
+# Restore token from cookie on first load
+if not st.session_state.token:
+    _saved_token    = _cm.get("pd_token")
+    _saved_username = _cm.get("pd_username")
+    if _saved_token:
+        st.session_state.token    = _saved_token
+        st.session_state.username = _saved_username or _jwt_username(_saved_token)
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # AUTH GATE
@@ -321,9 +373,12 @@ if not st.session_state.token:
                 r = requests.post(f"{API}/auth/login",
                                   data={"username": u, "password": p}, timeout=10)
                 if r.ok:
-                    st.session_state.token    = r.json()["access_token"]
+                    tok = r.json()["access_token"]
+                    st.session_state.token    = tok
                     st.session_state.username = u
                     st.session_state.page     = "home"
+                    _cm.set("pd_token",    tok, max_age=86400)
+                    _cm.set("pd_username", u,   max_age=86400)
                     st.rerun()
                 else:
                     st.error(r.json().get("detail", "Login failed"))
@@ -344,7 +399,7 @@ if not st.session_state.token:
 
 
 # ── shared data ───────────────────────────────────────────────────────────────
-@st.cache_data(ttl=30, show_spinner=False)
+@st.cache_data(ttl=120, show_spinner=False)
 def _load_plants(token: str) -> list[dict]:
     try:
         r = requests.get(f"{API}/plants/", headers={"Authorization": f"Bearer {token}"}, timeout=10)
@@ -352,7 +407,7 @@ def _load_plants(token: str) -> list[dict]:
     except requests.exceptions.RequestException:
         return []
 
-@st.cache_data(ttl=30, show_spinner=False)
+@st.cache_data(ttl=120, show_spinner=False)
 def _load_history(token: str) -> list[dict]:
     try:
         r = requests.get(f"{API}/diagnose/history", headers={"Authorization": f"Bearer {token}"}, timeout=10)
@@ -379,10 +434,11 @@ with st.sidebar:
     st.divider()
 
     NAV = [
-        ("🏠  Home",            "home"),
-        ("🌿  My Plants",       "plants"),
-        ("➕  Add Plant",       "add_plant"),
-        ("📷  7-Day Check-In",  "checkin"),
+        ("🏠  Home",             "home"),
+        ("🌿  My Plants",        "plants"),
+        ("➕  Add Plant",        "add_plant"),
+        ("📷  7-Day Check-In",   "checkin"),
+        ("📚  Knowledge Base",   "knowledge"),
     ]
     for nav_label, nav_key in NAV:
         is_active = st.session_state.page == nav_key
@@ -393,20 +449,15 @@ with st.sidebar:
             st.rerun()
 
     # ── plant mini-list ───────────────────────────────────────────────────────
-    plants_sb  = _load_plants(st.session_state.token)
+    plants_sb = _load_plants(st.session_state.token)
     if plants_sb:
-        history_sb = _load_history(st.session_state.token)
-        latest_sb  = _latest_diag(history_sb)
         st.divider()
         st.markdown(
             '<p style="font-size:.72rem;opacity:.6;margin:0 0 4px;letter-spacing:.06em">YOUR PLANTS</p>',
             unsafe_allow_html=True,
         )
         for _p in plants_sb[:8]:
-            _issue = latest_sb.get(_p["id"], {}).get("result")
-            _lbl, _ = _status(_issue)
-            _dot    = _DOT_EMOJI.get(_lbl, "⚪")
-            if st.button(f"{_dot}  {_p['name']}", key=f"sb_p_{_p['id']}",
+            if st.button(f"🌿  {_p['name']}", key=f"sb_p_{_p['id']}",
                          use_container_width=True):
                 st.session_state.detail_pid = _p["id"]
                 st.session_state.page       = "plant_detail"
@@ -414,6 +465,8 @@ with st.sidebar:
 
     st.divider()
     if st.button("Logout", use_container_width=True):
+        _cm.delete("pd_token")
+        _cm.delete("pd_username")
         for k, v in _DEFAULTS.items():
             st.session_state[k] = v
         st.rerun()
@@ -558,16 +611,15 @@ elif st.session_state.page == "plants":
                 st.rerun()
 
             if st.session_state.gallery_pid == pid:
-                pr     = _get(f"/plants/{pid}/photos")
-                photos = pr.json() if pr.ok else []
-                if not photos:
-                    st.caption("No photos uploaded yet.")
+                plant_diags = [d for d in history if d.get("plant_id") == pid and d.get("image_path")]
+                if not plant_diags:
+                    st.caption("No photos yet. Run a diagnosis to add photos.")
                 else:
-                    st.markdown('<div class="sec-hdr">Photo Gallery</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="sec-hdr">Photo Timeline</div>', unsafe_allow_html=True)
                     gcols = st.columns(3)
-                    for j, photo in enumerate(reversed(photos)):
-                        url = img_url(photo["filename"])
-                        ts  = photo.get("uploaded_at", "")[:10]
+                    for j, d in enumerate(reversed(plant_diags)):
+                        url = img_url(d["image_path"])
+                        ts  = d.get("created_at", "")[:10]
                         with gcols[j % 3]:
                             if url:
                                 st.image(url, use_container_width=True)
@@ -742,14 +794,26 @@ elif st.session_state.page == "diagnose":
                 st.markdown('<div class="upload-ph">📷<br><small>Preview</small></div>',
                             unsafe_allow_html=True)
 
+        user_context = st.text_area(
+            "Extra info from Reddit / Google (optional)",
+            height=120,
+            placeholder=(
+                "Paste anything helpful — a Reddit thread, care guide excerpt, "
+                "or your own notes. The AI will use it when writing your care plan."
+            ),
+        )
+
         if st.button("Start Diagnosis", type="primary",
                      disabled=uploaded is None, use_container_width=True):
             try:
                 with st.spinner("Identifying species and diagnosing..."):
+                    _form_data = {"species": species_hint} if species_hint else {}
+                    if user_context.strip():
+                        _form_data["user_context"] = user_context.strip()
                     r = requests.post(
                         f"{API}/diagnose/{chosen['id']}",
                         files={"file": (uploaded.name, uploaded.getvalue(), uploaded.type)},
-                        data={"species": species_hint} if species_hint else {},
+                        data=_form_data,
                         headers=_h(), timeout=90,
                     )
             except requests.exceptions.RequestException as e:
@@ -762,13 +826,18 @@ elif st.session_state.page == "diagnose":
                 st.session_state.diag_questions = data["questions"]
                 st.session_state.diag_diagnosis = data["diagnosis"]
                 st.session_state.diag_plant_pid = chosen["id"]
+                if data.get("completed"):
+                    # High-confidence direct path: graph already prescribed,
+                    # skip Q&A and jump straight to step 3.
+                    st.session_state.care_plan_text = data["care_plan"]
+                    st.session_state.care_plan_pfx  = f"cp_{data['care_plan_id']}"
                 st.rerun()
             else:
                 st.error(_err(r, "Diagnosis failed."))
 
     # ── step 2: questions ─────────────────────────────────────────────────────
     elif not st.session_state.care_plan_text:
-        st.markdown('<span class="step-pill">Step 2 of 3 — Answer Questions</span>',
+        st.markdown('<span class="step-pill">Step 2 of 3 — Clarify (needed for accurate care plan)</span>',
                     unsafe_allow_html=True)
 
         diag  = st.session_state.diag_diagnosis
@@ -803,6 +872,9 @@ elif st.session_state.page == "diagnose":
             st.markdown("**Observed symptoms**")
             for s in diag["symptoms"]:
                 st.markdown(f"- {s}")
+
+        if diag.get("evidence"):
+            st.caption(f"Evidence: {diag['evidence']}")
 
         st.divider()
         st.markdown("### Clarifying Questions")
@@ -1051,3 +1123,87 @@ elif st.session_state.page == "checkin":
             st.session_state["_ck_fetched_pid"] = None
             st.session_state.page               = "plants"
             st.rerun()
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# KNOWLEDGE BASE
+# ══════════════════════════════════════════════════════════════════════════════
+elif st.session_state.page == "knowledge":
+    st.markdown("## 📚 Knowledge Base")
+    st.caption(
+        "Paste plant-care text from any source (Reddit, UC IPM, care guides). "
+        "The AI will cite it when writing care plans."
+    )
+    st.divider()
+
+    tab_add, tab_manage = st.tabs(["Add Knowledge", "Manage Sources"])
+
+    # ── add ───────────────────────────────────────────────────────────────────
+    with tab_add:
+        with st.form("kb_add_form", clear_on_submit=True):
+            kb_source = st.text_input(
+                "Source name *",
+                placeholder="e.g. UC IPM — Spider Mites, Reddit r/houseplants",
+            )
+            kb_topic = st.text_input(
+                "Topic (optional)",
+                placeholder="e.g. pest control, overwatering, Monstera care",
+            )
+            kb_text = st.text_area(
+                "Paste content *",
+                height=260,
+                placeholder="Paste the full text here. Paragraphs are automatically split into searchable chunks.",
+            )
+            submitted = st.form_submit_button("Add to Knowledge Base", type="primary", use_container_width=True)
+
+        if submitted:
+            if not kb_source.strip():
+                st.error("Source name is required.")
+            elif not kb_text.strip():
+                st.error("Content cannot be empty.")
+            else:
+                with st.spinner("Chunking and embedding…"):
+                    r = _post("/knowledge/ingest", json={
+                        "text":   kb_text.strip(),
+                        "source": kb_source.strip(),
+                        "topic":  kb_topic.strip(),
+                    })
+                if r.ok:
+                    n = r.json().get("chunks_stored", 0)
+                    st.success(f"Added **{n}** chunks from *{kb_source}* to the knowledge base.")
+                else:
+                    st.error(_err(r, "Failed to ingest content."))
+
+    # ── manage ────────────────────────────────────────────────────────────────
+    with tab_manage:
+        r_src = _get("/knowledge/sources")
+        if r_src.ok:
+            sources = r_src.json()
+            if not sources:
+                st.info("No sources yet. Add some in the 'Add Knowledge' tab.")
+            else:
+                st.markdown(f"**{len(sources)} source(s)** in the knowledge base:")
+                for src in sources:
+                    col_info, col_del = st.columns([5, 1])
+                    with col_info:
+                        st.markdown(
+                            f'<div class="pcard-body">'
+                            f'<p class="pcard-name">{src["source"]}</p>'
+                            f'<p class="pcard-species">{src["topic"] or "No topic"} &nbsp;·&nbsp; '
+                            f'{src["chunks"]} chunk(s)</p>'
+                            f'</div>',
+                            unsafe_allow_html=True,
+                        )
+                    with col_del:
+                        if st.button("🗑", key=f"del_{src['source']}", help="Delete this source"):
+                            r_del = requests.delete(
+                                f"{API}/knowledge/sources/{src['source']}",
+                                headers=_h(), timeout=10,
+                            )
+                            if r_del.ok:
+                                st.success(f"Deleted *{src['source']}*.")
+                                st.rerun()
+                            else:
+                                st.error(_err(r_del, "Delete failed."))
+        else:
+            st.error(_err(r_src, "Could not load sources."))
