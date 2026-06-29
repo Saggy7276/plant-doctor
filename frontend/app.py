@@ -276,6 +276,12 @@ def img_url(stored: str) -> str:
 
 
 # ── care-plan parser ──────────────────────────────────────────────────────────
+def _extract_bold_header(content: str) -> str | None:
+    """Return inner text if content is purely a bold label (**Title** or **Title**:), else None."""
+    m = re.fullmatch(r'\*\*(.+?)\*\*:?', content.strip())
+    return m.group(1).strip() if m else None
+
+
 def parse_care_plan(text: str) -> list[tuple[str, str]]:
     items = []
     for raw in text.strip().splitlines():
@@ -283,13 +289,18 @@ def parse_care_plan(text: str) -> list[tuple[str, str]]:
         if not line:
             continue
         if re.match(r'^\d+\.\s+', line):
-            items.append(("step", re.sub(r'^\d+\.\s+', '', line)))
+            content = re.sub(r'^\d+\.\s+', '', line)
+            hdr = _extract_bold_header(content)
+            items.append(("header", hdr) if hdr else ("step", content))
         elif line.startswith(("- ", "* ", "• ")):
-            items.append(("step", line[2:].strip()))
-        elif re.match(r'^#{1,3}\s', line) or (line.startswith("**") and line.endswith("**")):
-            items.append(("header", line.strip("# *")))
+            content = line[2:].strip()
+            hdr = _extract_bold_header(content)
+            items.append(("header", hdr) if hdr else ("step", content))
+        elif re.match(r'^#{1,3}\s', line):
+            items.append(("header", re.sub(r'^#+\s*', '', line).strip()))
         else:
-            items.append(("text", line))
+            hdr = _extract_bold_header(line)
+            items.append(("header", hdr) if hdr else ("text", line))
     return items
 
 
@@ -347,12 +358,11 @@ def _jwt_username(token: str) -> str:
         return ""
 
 # Restore token from cookie on first load
-if not st.session_state.token:
-    _saved_token    = _cm.get("pd_token")
-    _saved_username = _cm.get("pd_username")
+if not st.session_state.token and not st.session_state.get("logout_pending"):
+    _saved_token = _cm.get("pd_token")
     if _saved_token:
         st.session_state.token    = _saved_token
-        st.session_state.username = _saved_username or _jwt_username(_saved_token)
+        st.session_state.username = _jwt_username(_saved_token)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -374,11 +384,11 @@ if not st.session_state.token:
                                   data={"username": u, "password": p}, timeout=10)
                 if r.ok:
                     tok = r.json()["access_token"]
-                    st.session_state.token    = tok
-                    st.session_state.username = u
-                    st.session_state.page     = "home"
-                    _cm.set("pd_token",    tok, max_age=86400)
-                    _cm.set("pd_username", u,   max_age=86400)
+                    st.session_state.token          = tok
+                    st.session_state.username       = u
+                    st.session_state.page           = "home"
+                    st.session_state["logout_pending"] = False
+                    _cm.set("pd_token", tok, max_age=86400)
                     st.rerun()
                 else:
                     st.error(r.json().get("detail", "Login failed"))
@@ -465,10 +475,10 @@ with st.sidebar:
 
     st.divider()
     if st.button("Logout", use_container_width=True):
-        _cm.delete("pd_token")
-        _cm.delete("pd_username")
+        _cm.set("pd_token", "", max_age=1)
         for k, v in _DEFAULTS.items():
             st.session_state[k] = v
+        st.session_state["logout_pending"] = True
         st.rerun()
 
 
@@ -610,6 +620,25 @@ elif st.session_state.page == "plants":
                 )
                 st.rerun()
 
+            if st.session_state.get(f"confirm_del_{pid}"):
+                st.warning(f"Remove **{plant['name']}**? This cannot be undone.")
+                cd1, cd2 = st.columns(2)
+                if cd1.button("Yes, remove", key=f"del_yes_{pid}", use_container_width=True):
+                    r_del = requests.delete(f"{API}/plants/{pid}", headers=_h(), timeout=10)
+                    if r_del.ok:
+                        st.session_state[f"confirm_del_{pid}"] = False
+                        _refresh()
+                        st.rerun()
+                    else:
+                        st.error(_err(r_del, "Failed to remove plant."))
+                if cd2.button("Cancel", key=f"del_no_{pid}", use_container_width=True):
+                    st.session_state[f"confirm_del_{pid}"] = False
+                    st.rerun()
+            else:
+                if st.button("Remove Plant", key=f"del_{pid}", use_container_width=True):
+                    st.session_state[f"confirm_del_{pid}"] = True
+                    st.rerun()
+
             if st.session_state.gallery_pid == pid:
                 plant_diags = [d for d in history if d.get("plant_id") == pid and d.get("image_path")]
                 if not plant_diags:
@@ -692,6 +721,28 @@ elif st.session_state.page == "plant_detail":
         if b3.button("← Plants", key="det_back", use_container_width=True):
             st.session_state.page = "plants"
             st.rerun()
+
+        st.markdown("")
+        if st.session_state.get("confirm_del_detail"):
+            st.warning(f"Remove **{plant['name']}**? This cannot be undone.")
+            dd1, dd2 = st.columns(2)
+            if dd1.button("Yes, remove", key="det_del_yes", use_container_width=True):
+                r_del = requests.delete(f"{API}/plants/{pid}", headers=_h(), timeout=10)
+                if r_del.ok:
+                    st.session_state["confirm_del_detail"] = False
+                    st.session_state.detail_pid = None
+                    _refresh()
+                    st.session_state.page = "plants"
+                    st.rerun()
+                else:
+                    st.error(_err(r_del, "Failed to remove plant."))
+            if dd2.button("Cancel", key="det_del_no", use_container_width=True):
+                st.session_state["confirm_del_detail"] = False
+                st.rerun()
+        else:
+            if st.button("Remove Plant", key="det_del", use_container_width=True):
+                st.session_state["confirm_del_detail"] = True
+                st.rerun()
 
     # ── right: diagnosis history timeline ─────────────────────────────────────
     with col_info:

@@ -130,5 +130,9 @@ def delete_plant(
     ).first()
     if not plant:
         raise HTTPException(status_code=404, detail="Plant not found")
+    # Delete child records in FK-safe order: care_plans → diagnoses → photos → plant
+    db.query(models.CarePlan).filter(models.CarePlan.plant_id == plant_id).delete()
+    db.query(models.Diagnosis).filter(models.Diagnosis.plant_id == plant_id).delete()
+    db.query(models.Photo).filter(models.Photo.plant_id == plant_id).delete()
     db.delete(plant)
     db.commit()
