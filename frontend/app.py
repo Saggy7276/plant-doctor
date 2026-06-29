@@ -261,7 +261,11 @@ def _post(path: str, **kw) -> requests.Response:
 
 def _err(r: requests.Response, fallback: str = "Request failed.") -> str:
     try:
-        return r.json().get("detail", fallback)
+        detail = r.json().get("detail", fallback)
+        if isinstance(detail, list):
+            msgs = [e.get("msg", str(e)) for e in detail if isinstance(e, dict)]
+            return "; ".join(msgs) if msgs else fallback
+        return detail
     except Exception:
         return f"{fallback} (HTTP {r.status_code})"
 
@@ -391,7 +395,7 @@ if not st.session_state.token:
                     _cm.set("pd_token", tok, max_age=86400)
                     st.rerun()
                 else:
-                    st.error(r.json().get("detail", "Login failed"))
+                    st.error(_err(r, "Login failed"))
 
         with tab_su:
             ru       = st.text_input("Username", key="su_u")
@@ -404,7 +408,7 @@ if not st.session_state.token:
                 if r.ok:
                     st.success("Account created! Please log in.")
                 else:
-                    st.error(r.json().get("detail", "Registration failed"))
+                    st.error(_err(r, "Registration failed"))
     st.stop()
 
 
