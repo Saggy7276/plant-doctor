@@ -16,7 +16,7 @@ The entire frontend lives in `frontend/app.py`. It communicates with the FastAPI
 |---|---|
 | **Login / Register** | Auth gate shown before anything else. Stores the JWT in a browser cookie so the user stays logged in on refresh. |
 | **Home** | Dashboard — total plants, healthy / recovering / critical counts, and the six most recent diagnoses. |
-| **My Plants** | Card grid of all plants with their latest status badge, photo thumbnail, and quick-action buttons. Inline gallery expands to show the full photo timeline for each plant. |
+| **My Plants** | Card grid of all plants with their latest status badge, photo thumbnail, and quick-action buttons. Includes a Remove Plant button with a two-step confirmation. Inline gallery expands to show the full photo timeline for each plant. |
 | **Add Plant** | Simple form to register a new plant (name + optional species). |
 | **Diagnose** | Three-step flow: upload photo → answer clarifying questions → read care plan. The care plan renders as a checklist with a progress bar. |
 | **7-Day Check-In** | Side-by-side before/after photo comparison. The agent returns a progress label (Improving / Stable / Worsening) and an updated care plan. |

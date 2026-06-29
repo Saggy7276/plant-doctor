@@ -53,7 +53,7 @@ Migrations run automatically on startup. Interactive docs are at `http://localho
 | POST | `/plants/` | Add a new plant |
 | GET | `/plants/{id}` | Get a single plant |
 | PUT | `/plants/{id}` | Update name / species |
-| DELETE | `/plants/{id}` | Delete a plant |
+| DELETE | `/plants/{id}` | Delete a plant and cascade-remove all its diagnoses, care plans, and photos |
 
 ### Diagnose — `/diagnose`
 
