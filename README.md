@@ -56,6 +56,63 @@ Managed by SQLAlchemy + Alembic. The schema is applied automatically every time 
 
 The `thread_id` column on `diagnoses` is the key that links a diagnosis record to its LangGraph checkpoint, which is what makes the 7-day check-in possible.
 
+```mermaid
+erDiagram
+    users {
+        int id PK
+        string username
+        string email
+        string hashed_password
+        datetime created_at
+    }
+    plants {
+        int id PK
+        string name
+        string species
+        int owner_id FK
+        datetime created_at
+    }
+    photos {
+        int id PK
+        string filename
+        string original_filename
+        int plant_id FK
+        int user_id FK
+        datetime uploaded_at
+    }
+    diagnoses {
+        int id PK
+        string image_path
+        int photo_id FK
+        text result
+        float confidence
+        int plant_id FK
+        int user_id FK
+        string thread_id
+        datetime created_at
+    }
+    care_plans {
+        int id PK
+        string title
+        text content
+        int plant_id FK
+        int user_id FK
+        int diagnosis_id FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    users ||--o{ plants : "owns"
+    users ||--o{ photos : "uploads"
+    users ||--o{ diagnoses : "has"
+    users ||--o{ care_plans : "has"
+    plants |o--o{ photos : "has"
+    plants |o--o{ diagnoses : "for"
+    plants ||--o{ care_plans : "for"
+    photos |o--o{ diagnoses : "source of"
+    diagnoses |o--o| care_plans : "generates"
+```
+
 ### `checkpoints.db` — LangGraph agent state
 
 A separate SQLite file at the project root. LangGraph writes a checkpoint after every node so that:
