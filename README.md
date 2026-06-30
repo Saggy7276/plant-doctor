@@ -45,6 +45,7 @@ The app uses **two SQLite databases** and one **vector store**.
 ### `backend/plant_doctor.db` — application data
 
 Managed by SQLAlchemy + Alembic. The schema is applied automatically every time the backend starts.
+Full schema is defined in [`backend/models.py`](backend/models.py); migrations in [`backend/alembic/`](backend/alembic/).
 
 | Table | Purpose |
 |---|---|
